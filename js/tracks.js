@@ -310,7 +310,7 @@ function buildLofi() {
     const bar = Math.floor(st / 16), pos = st % 16, at = swing(st);
     const ch = CH[Math.floor(bar / 2) % 4];
     const firstBar = bar % 2 === 0;
-    if (pos === 0 || pos === 10 || (!firstBar && pos === 7)) add(s.drums, K, at, 0.85);
+    if (pos === 0 || pos === 10 || (!firstBar && pos === 7)) add(s.drums, K, at, 0.7);
     if (pos === 4 || pos === 12) add(s.music, SN, at, 0.4);
     if (pos % 2 === 0) add(s.music, HH, at, 0.13);
     else if (pos % 4 === 3) add(s.music, HH, at, 0.06);
@@ -330,14 +330,14 @@ function buildLofi() {
       addEcho(s.music, synth({ midi: m, dur: 0.6, wave: "sine", decay: 5, release: 0.05 }), at, 0.12, s.at(3), 0.4, 3);
     }
   }
-  // Vinyl-Knistern und Rauschen
+  // ganz leises, weiches Bandrauschen (kein Knistern, das klang nach Kratzen)
   let hiss = 0;
   for (let i = 0; i < s.len; i++) {
-    hiss += (rnd() - hiss) * 0.05;
-    s.music[i] += hiss * 0.02;
-    if (Math.random() < 6 / RATE) s.music[i] += rnd() * 0.08;
+    hiss += (rnd() - hiss) * 0.02;
+    s.music[i] += hiss * 0.004;
   }
-  return master(s, { lp: 0.45, rms: 0.6 });
+  // bewusst leiser als die anderen Stücke: höhere Lautheit bringt den Limiter zum Zerren
+  return master(s, { lp: 0.45, rms: 0.38 });
 }
 
 /** Synthwave: 104 BPM, Em – C – G – D, Flächen, Echo-Arpeggio, Gated Snare. */
