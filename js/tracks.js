@@ -444,10 +444,83 @@ function buildDisco() {
   return master(s, { duck: duckEnv(s.len, kicks, 0.4, 10), rms: 0.6 });
 }
 
+/**
+ * Korobeiniki: russisches Volkslied (1861, gemeinfrei), eigenes Chiptune-
+ * Arrangement. Aufbau A – A' – B, 150 BPM, A-Moll.
+ */
+function buildKorobeiniki() {
+  const s = song(150, 24);
+  // [Schritt, MIDI, Länge in Sechzehnteln]; ein Takt = 16 Schritte
+  const A = [
+    [[0, 76, 4], [4, 71, 2], [6, 72, 2], [8, 74, 4], [12, 72, 2], [14, 71, 2]],
+    [[0, 69, 4], [4, 69, 2], [6, 72, 2], [8, 76, 4], [12, 74, 2], [14, 72, 2]],
+    [[0, 71, 6], [6, 72, 2], [8, 74, 4], [12, 76, 4]],
+    [[0, 72, 4], [4, 69, 4], [8, 69, 4]],
+    [[2, 74, 4], [6, 77, 2], [8, 81, 4], [12, 79, 2], [14, 77, 2]],
+    [[0, 76, 6], [6, 72, 2], [8, 76, 4], [12, 74, 2], [14, 72, 2]],
+    [[0, 71, 4], [4, 71, 2], [6, 72, 2], [8, 74, 4], [12, 76, 4]],
+    [[0, 72, 4], [4, 69, 4], [8, 69, 4]],
+  ];
+  const B = [
+    [[0, 76, 8], [8, 72, 8]],
+    [[0, 74, 8], [8, 71, 8]],
+    [[0, 72, 8], [8, 69, 8]],
+    [[0, 68, 8], [8, 71, 4]],
+    [[0, 76, 8], [8, 72, 8]],
+    [[0, 74, 8], [8, 71, 8]],
+    [[0, 72, 4], [4, 76, 4], [8, 81, 8]],
+    [[0, 80, 16]],
+  ];
+  const BASS_A = [40, 45, 40, 45, 38, 36, 40, 45]; // E A E A D C E A
+  const BASS_B = [45, 40, 45, 40, 45, 40, 45, 40]; // Am E Am E …
+  const CHORD = { 45: [57, 60, 64], 40: [56, 59, 64] }; // Am, E (für Teil B)
+
+  const K = kick({ dur: 0.12, f0: 160, f1: 45, pitchDecay: 45, ampDecay: 22, click: 0, drive: 1.6 });
+  const SN = noiseHit({ dur: 0.13, decay: 22, lp: 0.7 });
+  const HH = noiseHit({ dur: 0.03, decay: 120, hp: 0.5 });
+
+  for (let bar = 0; bar < 24; bar++) {
+    const part = bar < 16 ? "A" : "B";
+    const i = bar % 8;
+    const mel = part === "A" ? A[i] : B[i];
+    const root = part === "A" ? BASS_A[i] : BASS_B[i];
+    const base = bar * 16;
+
+    for (let pos = 0; pos < 16; pos++) {
+      const at = s.at(base + pos);
+      // Drums (in Teil B etwas zurückgenommen)
+      if (pos === 0 || pos === 8) add(s.drums, K, at, part === "A" ? 0.9 : 0.7);
+      if ((pos === 4 || pos === 12) && (part === "A" || pos === 12)) add(s.music, SN, at, 0.4);
+      if (pos % 2 === 0) add(s.music, HH, at, pos % 4 === 2 ? 0.13 : 0.08);
+      // Oktav-Bass in Achteln
+      if (pos % 2 === 0) {
+        const m = root + (pos % 4 === 2 ? 12 : 0);
+        add(s.music, synth({ midi: m, dur: 0.19, wave: "tri", decay: 5 }), at, 0.6);
+      }
+      // Teil B: leises Akkord-Arpeggio füllt die langen Melodietöne
+      if (part === "B") {
+        const ch = CHORD[root];
+        const m = [...ch, ch[1]][pos % 4] + 12;
+        add(s.music, synth({ midi: m, dur: 0.09, wave: "square", pw: 0.25, decay: 20, lp: 0.6 }), at, 0.07);
+      }
+    }
+    // Melodie
+    for (const [st, m, l] of mel) {
+      const dur = l * s.step * 0.9;
+      const at = s.at(base + st);
+      add(s.music, synth({ midi: m, dur, wave: "square", pw: 0.5, lp: 0.5, decay: 1.2, vib: 0.005, vibDelay: 0.18 }), at, 0.26);
+      // zweites A: Oktav-Stimme darunter
+      if (bar >= 8 && bar < 16) add(s.music, synth({ midi: m - 12, dur, wave: "square", pw: 0.125, lp: 0.45, decay: 1.5 }), at, 0.1);
+    }
+  }
+  return master(s, { rms: 0.55 });
+}
+
 export const TRACKS = [
   { name: "Techno", build: buildTechno },
   { name: "Chiptune", build: buildChiptune },
   { name: "Lo-Fi", build: buildLofi },
   { name: "Synthwave", build: buildSynthwave },
   { name: "Disco", build: buildDisco },
+  { name: "Korobeiniki", build: buildKorobeiniki },
 ];
