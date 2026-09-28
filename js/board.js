@@ -401,6 +401,10 @@ export class Board {
       this.collapse();
       await this.waitCalm();
       if (!this.hooks.alive()) return;
+      if (!this.refill && this.closeGaps()) {
+        await this.waitCalm();
+        if (!this.hooks.alive()) return;
+      }
       level++;
       first = false;
     }
@@ -424,6 +428,45 @@ export class Board {
     this.dying.push(t);
     this.tween(t, "scale", 1.4, 0.12);
     this.tween(t, "alpha", 0, 0.18, { done: () => { const i = this.dying.indexOf(t); if (i >= 0) this.dying.splice(i, 1); } });
+  }
+
+  /**
+   * Abräumen: leere Spalten zwischen gefüllten schließen. Die schmalere Seite
+   * (weniger Spalten, bei Gleichstand weniger Emojis) rutscht zur breiteren.
+   * Gibt true zurück, wenn etwas verschoben wurde.
+   */
+  closeGaps() {
+    const isEmpty = (c) => this.grid[c].every((t) => !t);
+    const tiles = (cols) => cols.reduce((n, c) => n + this.grid[c].filter(Boolean).length, 0);
+    let moved = false;
+    for (;;) {
+      const filled = [];
+      for (let c = 0; c < COLS; c++) if (!isEmpty(c)) filled.push(c);
+      if (filled.length < 2) break;
+      const lo = filled[0], hi = filled[filled.length - 1];
+      let gap = -1;
+      for (let c = lo; c <= hi && gap < 0; c++) if (isEmpty(c)) gap = c;
+      if (gap < 0) break;
+      const left = filled.filter((c) => c < gap), right = filled.filter((c) => c > gap);
+      const leftMoves = left.length < right.length ||
+        (left.length === right.length && tiles(left) < tiles(right));
+      if (leftMoves) {
+        for (let c = gap; c > lo; c--) this.grid[c] = this.grid[c - 1];
+        this.grid[lo] = new Array(ROWS).fill(null);
+      } else {
+        for (let c = gap; c < hi; c++) this.grid[c] = this.grid[c + 1];
+        this.grid[hi] = new Array(ROWS).fill(null);
+      }
+      moved = true;
+    }
+    if (moved) {
+      for (let c = 0; c < COLS; c++) for (const t of this.grid[c]) {
+        if (!t || t.x === c * CELL) continue;
+        t.swapping = true;
+        this.tween(t, "x", c * CELL, 0.22, { ease: easeOutQuad, done: () => { t.swapping = false; } });
+      }
+    }
+    return moved;
   }
 
   collapse() {
