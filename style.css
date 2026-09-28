@@ -86,6 +86,7 @@ button {
 
 .flat {
   position: absolute;
+  z-index: 2; /* über der zentrierten Menüspalte (.col), die die ganze Fläche abdeckt */
   width: 56px;
   height: 56px;
   font-size: 34px;
