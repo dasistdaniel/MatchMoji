@@ -657,8 +657,11 @@ $("btnInstall").addEventListener("click", async () => {
   installPrompt = null;
   $("btnInstall").hidden = true;
 });
-// iPhone/iPad kennen kein Installations-Ereignis: Hinweis auf das Teilen-Menü
-$("installHint").hidden = standalone || !/iphone|ipad|ipod/i.test(navigator.userAgent);
+// iPhone/iPad kennen kein Installations-Ereignis: Hinweis auf das Teilen-Menü.
+// iPads melden sich seit iPadOS 13 als „Macintosh“, erkennbar am Touchscreen.
+const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+  (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
+$("installHint").hidden = standalone || !ios;
 
 // ---------- Start ----------
 $("version").textContent = `v${VERSION}`;
