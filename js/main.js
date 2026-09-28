@@ -4,6 +4,8 @@ import { updateMusic, setMusicRate, setTrack, trackIndex, TRACKS } from "./music
 import { store, save, testMode } from "./storage.js";
 import { THEMES, pickKinds } from "./themes.js";
 
+export const VERSION = "1.0.0"; // bei jeder Änderung erhöhen
+
 const W = 540, H = 960;
 const TA_TIME = 90;
 const BONUS_POPUP = 1.0; // Anzeigedauer „+N s“
@@ -562,6 +564,7 @@ function frame(now) {
 requestAnimationFrame(frame);
 
 // ---------- Start ----------
+$("version").textContent = `v${VERSION}`;
 showScreen("menu");
 if (testMode && params.has("mode")) startGame([0, 1, 2, 3][parseInt(params.get("mode"), 10)] ?? 0);
 

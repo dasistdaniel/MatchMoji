@@ -192,6 +192,25 @@ h2 { margin: 0 0 16px; font-size: 48px; color: var(--accent); }
   pointer-events: none;
 }
 
+/* über .col, die die ganze Fläche abdeckt */
+.footer {
+  position: absolute;
+  left: 0; right: 0;
+  bottom: 18px;
+  z-index: 2;
+  text-align: center;
+  font-size: 15px;
+  color: rgba(255,255,255,0.45);
+  pointer-events: none;
+}
+.footer a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  pointer-events: auto;
+}
+.footer a:hover { color: var(--accent); }
+
 #over { background: rgba(13,8,31,0.82); }
 #over .col { gap: 16px; }
 .over-title { font-size: 60px; color: var(--accent); }
