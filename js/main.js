@@ -4,7 +4,7 @@ import { updateMusic, setMusicRate, setTrack, trackIndex, TRACKS } from "./music
 import { store, save, testMode } from "./storage.js";
 import { THEMES, pickKinds } from "./themes.js";
 
-export const VERSION = "1.0.0"; // bei jeder Änderung erhöhen
+export const VERSION = "1.1.0"; // bei jeder Änderung erhöhen
 
 const W = 540, H = 960;
 const TA_TIME = 90;

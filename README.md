@@ -20,7 +20,7 @@ Ein Match-3-Browserspiel mit Emojis: Tausche benachbarte Emojis und bilde Reihen
 
 Neun Themen (Tiere, Früchte, Fahrzeuge, Essen, Gesichter, Sport, Natur, Grusel und Gemischt). Rekorde und Einstellungen werden im Browser gespeichert.
 
-Thema, Musik und Soundeffekte stellst du unter **⚙️ Einstellungen** ein. Zur Wahl stehen sechs Musikstücke: Techno, Chiptune, Lo-Fi, Synthwave, Disco und Korobeiniki (eigenes Chiptune-Arrangement des gemeinfreien russischen Volkslieds, bekannt aus Tetris).
+Thema, Musik und Soundeffekte stellst du unter **⚙️ Einstellungen** ein. Zur Wahl stehen acht Musikstücke: Techno, Chiptune, Lo-Fi, Synthwave, Disco, Korobeiniki (gemeinfreies russisches Volkslied, bekannt aus Tetris), Blocksprung (eigene Komposition im Stil flotter Game-Boy-Musik) und Menuett (Bach, Französische Suite Nr. 3, BWV 814). Korobeiniki und Menuett sind eigene Chiptune-Arrangements gemeinfreier Werke.
 
 **Tasten:** `M` schaltet die Musik, `S` die Soundeffekte, `Esc` führt aus den Einstellungen zurück.
 
