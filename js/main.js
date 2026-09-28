@@ -174,7 +174,7 @@ async function startGame(mode) {
   const key = MODES[mode];
   game = {
     mode, key, score: 0, best0: store.best[key] || 0,
-    remaining: TA_TIME, elapsed: 0, running: false, timeUp: false,
+    remaining: TA_TIME, running: false, timeUp: false,
     message: "", recordSounded: false, bonus: null,
   };
   const g = game;
@@ -336,21 +336,17 @@ function updateGame(dt) {
   if (!board) return;
   board.update(dt);
   if (g.bonus && (g.bonus.t += dt) >= BONUS_POPUP) g.bonus = null;
-  if (!g.running) return;
-  if (g.mode === 0) {
-    const prev = g.remaining;
-    g.remaining = Math.max(0, g.remaining - dt);
-    for (let k = 10; k >= 1; k--) if (prev > k && g.remaining <= k) play("tick");
-    setMusicRate(g.remaining <= 10 ? 1.08 : 1);
-    if (g.remaining <= 0) timeUp();
-  } else {
-    g.elapsed += dt;
-  }
+  if (!g.running || g.mode !== 0) return; // Endlos: keine Uhr
+  const prev = g.remaining;
+  g.remaining = Math.max(0, g.remaining - dt);
+  for (let k = 10; k >= 1; k--) if (prev > k && g.remaining <= k) play("tick");
+  setMusicRate(g.remaining <= 10 ? 1.08 : 1);
+  if (g.remaining <= 0) timeUp();
 }
 
 // ---------- Zeichnen ----------
-function fmtTime(sec, up) {
-  const T = up ? Math.floor(sec * 10) : Math.ceil(sec * 10 - 1e-6);
+function fmtTime(sec) {
+  const T = Math.ceil(sec * 10 - 1e-6);
   const mm = Math.floor(T / 600), rest = T % 600;
   const ss = Math.floor(rest / 10), d = rest % 10;
   return `⏱ ${String(mm).padStart(2, "0")}:${String(ss).padStart(2, "0")}.${d}`;
@@ -378,8 +374,7 @@ function drawBackground() {
 function drawGame() {
   const g = game;
   const ta = g.mode === 0;
-  const t = ta ? fmtTime(g.remaining, false) : fmtTime(g.elapsed, true);
-  text(t, W / 2, 26, 36, ta && g.remaining <= 10 ? DANGER : ACCENT);
+  if (ta) text(fmtTime(g.remaining), W / 2, 26, 36, g.remaining <= 10 ? DANGER : ACCENT);
   text(`${g.score} Punkte`, W / 2, 84, 26, "#fff");
   const rec = g.best0 > 0 && g.score > g.best0 ? "🏆 Neuer Rekord!" : `🏆 Rekord ${g.best0}`;
   text(rec, 525, 40, 16, "rgba(255,255,255,0.6)", "right");
