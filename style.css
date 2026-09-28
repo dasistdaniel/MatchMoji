@@ -83,6 +83,30 @@ button {
 .btn:hover { background: var(--accent-hover); }
 .btn:active { background: var(--accent-press); }
 .btn.round { width: 56px; height: 56px; font-size: 24px; flex: none; }
+.btn.secondary {
+  height: 60px;
+  font-size: 26px;
+  background: transparent;
+  color: var(--accent);
+  box-shadow: inset 0 0 0 3px var(--accent);
+}
+.btn.secondary:hover { background: rgba(255,201,74,0.12); }
+.btn.secondary:active { background: rgba(255,201,74,0.25); }
+.btn.back { margin-top: 24px; }
+.settings-entry { margin-top: 10px; }
+
+.iconbtn {
+  width: 44px;
+  height: 44px;
+  flex: none;
+  font-size: 26px;
+  background: transparent;
+  border-radius: 50%;
+  font-family: var(--emoji-font);
+  line-height: 1;
+}
+.iconbtn:hover { background: rgba(255,255,255,0.1); }
+.iconbtn.off { opacity: 0.3; }
 
 .flat {
   position: absolute;
@@ -97,8 +121,6 @@ button {
 }
 .flat:hover { color: #fff; filter: brightness(1.15); }
 .flat:active { filter: brightness(0.85); }
-.flat.icon { width: 64px; height: 64px; }
-.flat.off { opacity: 0.3; }
 #btnQuit { display: none; font-family: var(--ui-font); }
 #btnQuit.show { display: block; }
 
@@ -108,6 +130,9 @@ h1 {
   color: var(--accent);
   line-height: 1;
 }
+h2 { margin: 0 0 16px; font-size: 48px; color: var(--accent); }
+.section-label { font-size: 20px; margin-top: 18px; }
+.section-hint { font-size: 15px; color: rgba(255,255,255,0.5); }
 .sub { font-size: 24px; color: rgba(255,255,255,0.8); }
 .hint { font-size: 17px; color: rgba(255,255,255,0.55); }
 
@@ -130,7 +155,6 @@ h1 {
 
 .vol { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
 .vol-row { display: flex; align-items: center; gap: 12px; }
-.vol-icon { font-size: 26px; width: 34px; text-align: center; }
 .pct { width: 56px; text-align: right; font-size: 18px; }
 
 .slider {

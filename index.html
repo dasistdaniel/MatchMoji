@@ -12,22 +12,10 @@
     <canvas id="cv"></canvas>
 
     <div id="menu" class="screen">
-      <button id="btnMusic" class="flat icon" style="left:394px;top:18px" aria-label="Musik an/aus">🎵</button>
-      <button id="btnSound" class="flat icon" style="left:462px;top:18px" aria-label="Soundeffekte an/aus">🔊</button>
       <div class="col">
         <h1>MatchMoji</h1>
         <p class="sub">Tausche Emojis – 3 in einer Reihe!</p>
         <p class="hint">4er → ⚡ Linien-Blitz &nbsp; · &nbsp; 5er → 🌟 Super-Stern</p>
-
-        <div class="themes">
-          <button id="themePrev" class="btn round">◀</button>
-          <div class="theme-mid">
-            <div class="theme-label">Thema</div>
-            <div id="themeName" class="theme-name"></div>
-            <div id="themePreview" class="theme-preview emoji"></div>
-          </div>
-          <button id="themeNext" class="btn round">▶</button>
-        </div>
 
         <div class="mode">
           <button id="btnNormal" class="btn">🎯 Normal</button>
@@ -46,10 +34,34 @@
           <div id="bestClear" class="best"></div>
         </div>
 
-        <div class="vol">
-          <div class="vol-row"><span class="emoji vol-icon">🎵</span><div id="volMusic" class="slider"><div class="track"><div class="fill"></div></div><div class="knob"></div></div><span class="pct"></span></div>
-          <div class="vol-row"><span class="emoji vol-icon">🔊</span><div id="volSfx" class="slider"><div class="track"><div class="fill"></div></div><div class="knob"></div></div><span class="pct"></span></div>
+        <div class="mode settings-entry">
+          <button id="btnSettings" class="btn secondary">⚙️ Einstellungen</button>
+          <div id="menuTheme" class="best"></div>
         </div>
+      </div>
+    </div>
+
+    <div id="settings" class="screen">
+      <div class="col">
+        <h2>Einstellungen</h2>
+
+        <div class="themes">
+          <button id="themePrev" class="btn round">◀</button>
+          <div class="theme-mid">
+            <div class="theme-label">Thema</div>
+            <div id="themeName" class="theme-name"></div>
+            <div id="themePreview" class="theme-preview emoji"></div>
+          </div>
+          <button id="themeNext" class="btn round">▶</button>
+        </div>
+
+        <div class="section-label">Ton <span class="section-hint">· Symbol antippen zum An-/Ausschalten</span></div>
+        <div class="vol">
+          <div class="vol-row"><button id="btnMusic" class="iconbtn" aria-label="Musik an/aus">🎵</button><div id="volMusic" class="slider"><div class="track"><div class="fill"></div></div><div class="knob"></div></div><span class="pct"></span></div>
+          <div class="vol-row"><button id="btnSound" class="iconbtn" aria-label="Soundeffekte an/aus">🔊</button><div id="volSfx" class="slider"><div class="track"><div class="fill"></div></div><div class="knob"></div></div><span class="pct"></span></div>
+        </div>
+
+        <button id="btnBack" class="btn back">Zurück</button>
       </div>
     </div>
 

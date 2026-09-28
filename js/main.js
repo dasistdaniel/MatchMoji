@@ -52,14 +52,16 @@ if (!(store.theme >= 0 && store.theme < THEMES.length)) store.theme = 0;
 function showScreen(name) {
   screen = name;
   $("menu").classList.toggle("show", name === "menu");
+  $("settings").classList.toggle("show", name === "settings");
   $("over").classList.toggle("show", name === "over");
   $("btnQuit").classList.toggle("show", name === "game");
-  if (name === "menu") refreshMenu();
+  if (name === "menu" || name === "settings") refreshMenu();
 }
 
 // ---------- Menü ----------
 function refreshMenu() {
   $("themeName").textContent = THEMES[store.theme].name;
+  $("menuTheme").textContent = `Thema: ${THEMES[store.theme].name}`;
   $("themePreview").textContent = pickKinds(store.theme).join(" ");
   $("bestTA").textContent = `90 Sekunden · Rekord ${store.best.time_attack}`;
   $("bestEndless").textContent = `Ohne Zeitlimit · Rekord ${store.best.endless}`;
@@ -153,13 +155,16 @@ $("btnEndless").addEventListener("click", () => startGame(1));
 $("btnClear").addEventListener("click", () => startGame(2));
 $("btnNormal").addEventListener("click", () => startGame(3));
 $("btnQuit").addEventListener("click", toMenu);
+$("btnSettings").addEventListener("click", () => showScreen("settings"));
+$("btnBack").addEventListener("click", () => showScreen("menu"));
 $("btnAgain").addEventListener("click", () => startGame(game ? game.mode : 0));
 $("btnMenu").addEventListener("click", toMenu);
 
 window.addEventListener("keydown", (e) => {
   if (e.repeat) return;
   const k = e.key.toLowerCase();
-  if (k === "m") toggleMusic();
+  if (k === "escape" && screen === "settings") showScreen("menu");
+  else if (k === "m") toggleMusic();
   else if (k === "s") toggleSound();
 });
 
