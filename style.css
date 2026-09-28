@@ -134,7 +134,7 @@ h2 { margin: 0 0 16px; font-size: 48px; color: var(--accent); }
 .section-label { font-size: 20px; margin-top: 18px; }
 .section-hint { font-size: 15px; color: rgba(255,255,255,0.5); }
 .sub { font-size: 24px; color: rgba(255,255,255,0.8); }
-.hint { font-size: 17px; color: rgba(255,255,255,0.55); }
+.hint { font-size: 17px; color: rgba(255,255,255,0.55); margin-bottom: 36px; }
 
 .themes {
   width: 460px;
