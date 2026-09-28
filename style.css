@@ -58,7 +58,7 @@ html, body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 14px;
+  gap: 10px;
 }
 
 p { margin: 0; }
@@ -106,10 +106,10 @@ h1 {
   margin: 0;
   font-size: 72px;
   color: var(--accent);
-  line-height: 1.1;
+  line-height: 1;
 }
 .sub { font-size: 24px; color: rgba(255,255,255,0.8); }
-.hint { font-size: 17px; color: rgba(255,255,255,0.55); margin-bottom: 6px; }
+.hint { font-size: 17px; color: rgba(255,255,255,0.55); }
 
 .themes {
   width: 460px;
@@ -119,17 +119,16 @@ h1 {
   padding: 10px 12px;
   background: rgba(0,0,0,0.25);
   border-radius: 20px;
-  margin-bottom: 6px;
 }
 .theme-mid { flex: 1; text-align: center; }
 .theme-label { font-size: 16px; color: rgba(255,255,255,0.55); }
 .theme-name { font-size: 30px; }
 .theme-preview { font-size: 30px; white-space: nowrap; }
 
-.mode { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.mode { display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .best { font-size: 18px; color: rgba(255,255,255,0.6); }
 
-.vol { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
+.vol { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
 .vol-row { display: flex; align-items: center; gap: 12px; }
 .vol-icon { font-size: 26px; width: 34px; text-align: center; }
 .pct { width: 56px; text-align: right; font-size: 18px; }

@@ -62,7 +62,7 @@ function makeTile(kind) {
 export class Board {
   /**
    * @param kinds  Array mit 6 Emojis
-   * @param hooks  { alive(), onScore(points, level), onBonus(sec), message(text), isOver() }
+   * @param hooks  { alive(), onScore(points, level), onBonus(sec), onMatches(n), message(text), isOver() }
    * @param opts   { refill }: ohne Nachschub bleiben geleerte Felder leer (Normal-Modus)
    */
   constructor(kinds, hooks, opts = {}) {
@@ -371,6 +371,8 @@ export class Board {
       this.hooks.onScore(points, level);
       play("match", Math.min(1 + 0.12 * (level - 1), 1.8));
       if (runs.length) this.hooks.onBonus(runs.length);
+      // Matches: jede Reihe zählt, ein Stern-Tausch ohne Reihe zählt als ein Match
+      this.hooks.onMatches(runs.length || 1);
 
       // Spezial-Emojis setzen
       if (creations.size) {

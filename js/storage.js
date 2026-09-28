@@ -1,7 +1,7 @@
 const KEY = "memoji";
 
 const params = new URLSearchParams(location.search);
-export const testMode = ["mode", "theme", "moves", "specials", "timeup"].some((k) => params.has(k));
+export const testMode = ["mode", "theme", "moves", "specials", "timeup", "goal"].some((k) => params.has(k));
 
 const defaults = () => ({
   theme: 0,
@@ -9,7 +9,8 @@ const defaults = () => ({
   sound: true,
   musicVolume: 1,
   sfxVolume: 1,
-  best: { time_attack: 0, endless: 0, normal: null }, // normal: wenigste Reste
+  // clear: wenigste Reste (Abräumen), normal: schnellste Zeit in Sekunden
+  best: { time_attack: 0, endless: 0, clear: null, normal: null },
 });
 
 function load() {
@@ -20,7 +21,13 @@ function load() {
       const s = JSON.parse(raw);
       if (s && typeof s === "object") {
         Object.assign(data, s);
-        data.best = Object.assign(defaults().best, s.best || {});
+        const best = Object.assign({}, s.best || {});
+        // Früher hieß „Abräumen“ „normal“ und speicherte dort die Reste
+        if (!("clear" in best) && "normal" in best) {
+          best.clear = best.normal;
+          delete best.normal;
+        }
+        data.best = Object.assign(defaults().best, best);
       }
     }
   } catch (e) { /* kein Speicher verfügbar */ }

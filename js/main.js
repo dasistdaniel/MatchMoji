@@ -9,9 +9,11 @@ const TA_TIME = 90;
 const BONUS_POPUP = 1.0; // Anzeigedauer „+N s“
 const ACCENT = "#ffc94a";
 const DANGER = "#ff6b6b";
-const MODES = ["time_attack", "endless", "normal"];
-const NORMAL_KINDS = 4; // Normal-Modus: weniger Sorten, sonst ist Abräumen kaum schaffbar
+// 0 Time Attack, 1 Endlos, 2 Abräumen, 3 Normal
+const MODES = ["time_attack", "endless", "clear", "normal"];
+const CLEAR_KINDS = 4; // Abräumen: weniger Sorten, sonst ist das Brett kaum leer zu bekommen
 const STAR_LIMITS = [12, 5, 0]; // Reste für ★ / ★★ / ★★★
+const NORMAL_GOAL = 50; // Normal: so viele Matches, Score ist die Zeit
 const HUD_FONT = (size) => `700 ${size}px ${UI_FONT.replace("sans-serif", "")}${EMOJI_FONT}`;
 
 const $ = (id) => document.getElementById(id);
@@ -61,7 +63,8 @@ function refreshMenu() {
   $("themePreview").textContent = pickKinds(store.theme).join(" ");
   $("bestTA").textContent = `90 Sekunden · Rekord ${store.best.time_attack}`;
   $("bestEndless").textContent = `Ohne Zeitlimit · Rekord ${store.best.endless}`;
-  $("bestNormal").textContent = `Alles abräumen · Rekord ${fmtLeft(store.best.normal)}`;
+  $("bestClear").textContent = `Brett leer räumen · Rekord ${fmtLeft(store.best.clear)}`;
+  $("bestNormal").textContent = `${NORMAL_GOAL} Matches · Rekord ${fmtBest(store.best.normal)}`;
   refreshAudioButtons();
 }
 
@@ -147,7 +150,8 @@ $("btnMusic").addEventListener("click", toggleMusic);
 $("btnSound").addEventListener("click", toggleSound);
 $("btnTA").addEventListener("click", () => startGame(0));
 $("btnEndless").addEventListener("click", () => startGame(1));
-$("btnNormal").addEventListener("click", () => startGame(2));
+$("btnClear").addEventListener("click", () => startGame(2));
+$("btnNormal").addEventListener("click", () => startGame(3));
 $("btnQuit").addEventListener("click", toMenu);
 $("btnAgain").addEventListener("click", () => startGame(game ? game.mode : 0));
 $("btnMenu").addEventListener("click", toMenu);
@@ -163,6 +167,10 @@ window.addEventListener("keydown", (e) => {
 // (bei Touch zählt erst pointerup/touchend als Nutzeraktion)
 for (const ev of ["pointerdown", "pointerup", "touchend", "click", "keydown"]) {
   window.addEventListener(ev, unlockAudio, true);
+}
+
+function fmtBest(sec) {
+  return sec == null ? "–" : fmtTime(sec, true).slice(2);
 }
 
 function fmtLeft(n) {
@@ -185,14 +193,15 @@ async function startGame(mode) {
   const id = ++roundId;
   const key = MODES[mode];
   game = {
-    mode, key, score: 0, best0: mode === 2 ? store.best.normal : store.best[key] || 0,
+    mode, key, score: 0, best0: mode >= 2 ? store.best[key] : store.best[key] || 0,
+    elapsed: 0, matches: 0, goal: NORMAL_GOAL,
     remaining: TA_TIME, running: false, ended: false,
     message: "", recordSounded: false, bonus: null,
   };
   const g = game;
   const alive = () => id === roundId;
   const kinds = pickKinds(store.theme);
-  if (mode === 2) kinds.length = NORMAL_KINDS;
+  if (mode === 2) kinds.length = CLEAR_KINDS;
   board = new Board(kinds, {
     alive,
     isOver: () => g.ended,
@@ -203,6 +212,11 @@ async function startGame(mode) {
       g.remaining += sec;
       if (g.bonus && g.bonus.t < 0.3) g.bonus.sec += sec;
       else g.bonus = { sec, t: 0 };
+    },
+    onMatches: (n) => {
+      if (g.mode !== 3 || !g.running || g.ended) return;
+      g.matches = Math.min(g.goal, g.matches + n);
+      if (g.matches >= g.goal) normalDone();
     },
     onScore: (points) => {
       g.score += points;
@@ -222,6 +236,7 @@ async function startGame(mode) {
 
   if (testMode && params.get("specials") === "1") b.debugSpecials();
   if (testMode && params.get("timeup") === "1") g.remaining = 0.01;
+  if (testMode && params.has("goal")) g.goal = Math.max(1, parseInt(params.get("goal"), 10) || NORMAL_GOAL);
   g.running = true;
   b.locked = false;
 
@@ -238,7 +253,7 @@ async function doSwap(a, b) {
     store.best.endless = g.score;
     save();
   }
-  if (g.mode === 2 && !g.ended && (bd.count() === 0 || !bd.hasValidMove())) normalOver();
+  if (g.mode === 2 && !g.ended && (bd.count() === 0 || !bd.hasValidMove())) clearOver();
   return ok;
 }
 
@@ -285,8 +300,8 @@ async function timeUp() {
   if (newRecord) play("record");
 }
 
-/** Normal-Modus: Brett leer oder keine Züge mehr. */
-async function normalOver() {
+/** Abräumen: Brett leer oder keine Züge mehr. */
+async function clearOver() {
   const id = roundId;
   const g = game, b = board;
   g.ended = true;
@@ -297,10 +312,10 @@ async function normalOver() {
   const left = b.count();
   const stars = starsFor(left);
   g.message = left === 0 ? "Alles abgeräumt!" : "Keine Züge mehr!";
-  const prev = store.best.normal;
+  const prev = store.best.clear;
   const improved = prev == null || left < prev;
   if (improved) {
-    store.best.normal = left;
+    store.best.clear = left;
     save();
   }
   const newRecord = improved && stars > 0;
@@ -310,7 +325,37 @@ async function normalOver() {
   const title = left === 0 ? "Geschafft!" : stars > 0 ? "Gut gemacht!" : "Verloren!";
   showOver(left === 0 ? "🎉" : stars > 0 ? "🙂" : "😵", title, stars,
     left === 0 ? `${g.score} Punkte` : `${left} übrig · ${g.score} Punkte`,
-    newRecord ? "🏆 Neuer Rekord!" : `Rekord: ${fmtLeft(store.best.normal)}`);
+    newRecord ? "🏆 Neuer Rekord!" : `Rekord: ${fmtLeft(store.best.clear)}`);
+  if (newRecord) play("record");
+}
+
+/** Normal: Ziel erreicht. Die Uhr steht sofort, eine laufende Kette darf auslaufen. */
+async function normalDone() {
+  const id = roundId;
+  const g = game, b = board;
+  g.ended = true;
+  g.running = false;
+  b.locked = true;
+  b.selected = null;
+  drag = null;
+  g.message = "Ziel erreicht!";
+  while (b.busy) {
+    await b.wait(0.05);
+    if (id !== roundId) return;
+  }
+  g.message = "Ziel erreicht!";
+  const time = Math.floor(g.elapsed * 10) / 10;
+  const prev = store.best.normal;
+  const newRecord = prev == null || time < prev;
+  if (newRecord) {
+    store.best.normal = time;
+    save();
+  }
+  play("special");
+  await b.wait(0.6);
+  if (id !== roundId) return;
+  showOver("🎯", "Geschafft!", -1, fmtTime(time, true),
+    newRecord ? "🏆 Neuer Rekord!" : `Rekord: ${fmtBest(store.best.normal)}`);
   if (newRecord) play("record");
 }
 
@@ -391,7 +436,9 @@ function updateGame(dt) {
   if (!board) return;
   board.update(dt);
   if (g.bonus && (g.bonus.t += dt) >= BONUS_POPUP) g.bonus = null;
-  if (!g.running || g.mode !== 0) return; // Endlos: keine Uhr
+  if (!g.running) return;
+  if (g.mode === 3) { g.elapsed += dt; return; } // Normal: Uhr zählt hoch
+  if (g.mode !== 0) return; // Endlos, Abräumen: keine Uhr
   const prev = g.remaining;
   g.remaining = Math.max(0, g.remaining - dt);
   for (let k = 10; k >= 1; k--) if (prev > k && g.remaining <= k) play("tick");
@@ -400,8 +447,8 @@ function updateGame(dt) {
 }
 
 // ---------- Zeichnen ----------
-function fmtTime(sec) {
-  const T = Math.ceil(sec * 10 - 1e-6);
+function fmtTime(sec, up = false) {
+  const T = up ? Math.floor(sec * 10 + 1e-6) : Math.ceil(sec * 10 - 1e-6);
   const mm = Math.floor(T / 600), rest = T % 600;
   const ss = Math.floor(rest / 10), d = rest % 10;
   return `⏱ ${String(mm).padStart(2, "0")}:${String(ss).padStart(2, "0")}.${d}`;
@@ -430,9 +477,15 @@ function drawGame() {
   const g = game;
   const ta = g.mode === 0;
   if (ta) text(fmtTime(g.remaining), W / 2, 26, 36, g.remaining <= 10 ? DANGER : ACCENT);
-  if (g.mode === 2) text(`🧩 ${board.count()} übrig`, W / 2, 26, 36, ACCENT);
-  text(`${g.score} Punkte`, W / 2, 84, 26, "#fff");
+  if (g.mode === 2) text(`🧹 ${board.count()} übrig`, W / 2, 26, 36, ACCENT);
+  if (g.mode === 3) {
+    text(fmtTime(g.elapsed, true), W / 2, 26, 36, ACCENT);
+    text(`🎯 ${g.matches} / ${g.goal} Matches`, W / 2, 84, 26, "#fff");
+  } else {
+    text(`${g.score} Punkte`, W / 2, 84, 26, "#fff");
+  }
   const rec = g.mode === 2 ? `🏆 Rekord ${fmtLeft(g.best0)}`
+    : g.mode === 3 ? `🏆 Rekord ${fmtBest(g.best0)}`
     : g.best0 > 0 && g.score > g.best0 ? "🏆 Neuer Rekord!" : `🏆 Rekord ${g.best0}`;
   text(rec, 525, 40, 16, "rgba(255,255,255,0.6)", "right");
 
@@ -444,11 +497,11 @@ function drawGame() {
     ctx.restore();
   }
 
-  if (ta) {
+  if (ta || g.mode === 3) {
     roundRect(ctx, 40, 132, 460, 14, 7);
     ctx.fillStyle = "rgba(0,0,0,0.3)";
     ctx.fill();
-    const f = Math.max(0, Math.min(1, g.remaining / TA_TIME));
+    const f = Math.max(0, Math.min(1, ta ? g.remaining / TA_TIME : g.matches / g.goal));
     if (f > 0) {
       ctx.save();
       roundRect(ctx, 40, 132, 460, 14, 7);
@@ -485,7 +538,7 @@ requestAnimationFrame(frame);
 
 // ---------- Start ----------
 showScreen("menu");
-if (testMode && params.has("mode")) startGame([0, 1, 2][parseInt(params.get("mode"), 10)] ?? 0);
+if (testMode && params.has("mode")) startGame([0, 1, 2, 3][parseInt(params.get("mode"), 10)] ?? 0);
 
 // Test-Zugriff
 window.__game = {
