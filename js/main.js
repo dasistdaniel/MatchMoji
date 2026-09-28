@@ -486,6 +486,8 @@ function drawGame() {
   if (g.mode === 3) {
     text(fmtTime(g.elapsed, true), W / 2, 26, 36, ACCENT);
     text(`🎯 ${g.matches} / ${g.goal} Matches`, W / 2, 84, 26, "#fff");
+  } else if (g.mode === 1) {
+    text(`${g.score} Punkte`, W / 2, 26, 36, ACCENT); // Endlos: keine Uhr, Punkte oben
   } else {
     text(`${g.score} Punkte`, W / 2, 84, 26, "#fff");
   }
