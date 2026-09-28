@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#1a1333">
+  <title>MatchMoji</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="stage">
+    <canvas id="cv"></canvas>
+
+    <div id="menu" class="screen">
+      <button id="btnMusic" class="flat icon" style="left:394px;top:18px" aria-label="Musik an/aus">🎵</button>
+      <button id="btnSound" class="flat icon" style="left:462px;top:18px" aria-label="Soundeffekte an/aus">🔊</button>
+      <div class="col">
+        <h1>MatchMoji</h1>
+        <p class="sub">Tausche Emojis – 3 in einer Reihe!</p>
+        <p class="hint">4er → ⚡ Linien-Blitz &nbsp; · &nbsp; 5er → 🌟 Super-Stern</p>
+
+        <div class="themes">
+          <button id="themePrev" class="btn round">◀</button>
+          <div class="theme-mid">
+            <div class="theme-label">Thema</div>
+            <div id="themeName" class="theme-name"></div>
+            <div id="themePreview" class="theme-preview emoji"></div>
+          </div>
+          <button id="themeNext" class="btn round">▶</button>
+        </div>
+
+        <div class="mode">
+          <button id="btnTA" class="btn">⏱ Time Attack</button>
+          <div id="bestTA" class="best"></div>
+        </div>
+        <div class="mode">
+          <button id="btnEndless" class="btn">♾ Endlos</button>
+          <div id="bestEndless" class="best"></div>
+        </div>
+
+        <div class="vol">
+          <div class="vol-row"><span class="emoji vol-icon">🎵</span><div id="volMusic" class="slider"><div class="track"><div class="fill"></div></div><div class="knob"></div></div><span class="pct"></span></div>
+          <div class="vol-row"><span class="emoji vol-icon">🔊</span><div id="volSfx" class="slider"><div class="track"><div class="fill"></div></div><div class="knob"></div></div><span class="pct"></span></div>
+        </div>
+      </div>
+    </div>
+
+    <button id="btnQuit" class="flat" style="left:12px;top:22px">✕</button>
+
+    <div id="over" class="screen">
+      <div class="col">
+        <div class="emoji" style="font-size:96px">⏰</div>
+        <div class="over-title">Zeit um!</div>
+        <div id="overScore" class="over-score"></div>
+        <div id="overBest" class="over-best"></div>
+        <button id="btnAgain" class="btn">Nochmal</button>
+        <button id="btnMenu" class="btn">Menü</button>
+      </div>
+    </div>
+  </div>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
