@@ -82,6 +82,8 @@ export class Board {
     this.locked = true;
     this.busy = false;
     this.time = 0;
+    this.hint = null;
+    this.quietLines = false; // bei Kombis: Linien ohne eigenen Bonus/Sound
   }
 
   // ---------- Hilfen ----------
@@ -150,19 +152,43 @@ export class Board {
     return this.grid.map((col) => col.map((t) => (t ? (t.special === "star" ? -1 : t.kind) : -2)));
   }
 
-  hasValidMove() { return hasValidMoveKinds(this.kindGrid()); }
+  /**
+   * Einzige Stelle, die entscheidet, ob ein Tausch gültig ist: kein leeres Feld,
+   * und entweder zwei Spezial-Emojis (Kombi), ein Stern oder eine neue Reihe.
+   */
+  swapIsValid(g, c1, r1, c2, r2) {
+    const t1 = this.grid[c1][r1], t2 = this.grid[c2][r2];
+    if (!t1 || !t2) return false;
+    if (t1.special && t2.special) return true;
+    return swapMakesMatch(g, c1, r1, c2, r2);
+  }
 
-  /** Erster gültiger Zug (für Test-KI). */
-  findMove() {
+  /** Alle gültigen Züge als [[a, b], …]. */
+  findMoves(firstOnly = false) {
     const g = this.kindGrid();
+    const moves = [];
     for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) {
       for (const [dc, dr] of [[1, 0], [0, 1]]) {
         const c2 = c + dc, r2 = r + dr;
         if (c2 >= COLS || r2 >= ROWS) continue;
-        if (swapMakesMatch(g, c, r, c2, r2)) return [{ c, r }, { c: c2, r: r2 }];
+        if (this.swapIsValid(g, c, r, c2, r2)) {
+          moves.push([{ c, r }, { c: c2, r: r2 }]);
+          if (firstOnly) return moves;
+        }
       }
     }
-    return null;
+    return moves;
+  }
+
+  hasValidMove() { return this.findMoves(true).length > 0; }
+
+  /** Erster gültiger Zug (für Test-KI). */
+  findMove() { return this.findMoves(true)[0] || null; }
+
+  /** Hinweis: die beiden Emojis eines Zugs wackeln lassen. */
+  showHint(move) {
+    const tiles = move.map((p) => this.grid[p.c][p.r]);
+    if (tiles.every(Boolean)) this.hint = { tiles, start: this.time };
   }
 
   // ---------- Reihen suchen ----------
@@ -227,6 +253,7 @@ export class Board {
     this.busy = true;
     this.locked = true;
     this.selected = null;
+    this.hint = null;
     this.hooks.message("");
     play("swap");
     this.animateSwap(a, b);
@@ -237,7 +264,9 @@ export class Board {
     const tb = this.grid[a.c][a.r];
     const starA = ta.special === "star", starB = tb.special === "star";
 
-    if (starA || starB) {
+    if (ta.special && tb.special && !(starA && starB)) {
+      await this.combo(a, b, ta, tb);
+    } else if (starA || starB) {
       const pre = new Set();
       const triggered = new Set();
       if (starA && starB) {
@@ -271,6 +300,46 @@ export class Board {
     return true;
   }
 
+  /**
+   * Zwei Spezial-Emojis getauscht (Stern + Stern läuft über den normalen Stern-Tausch).
+   * Blitz + Blitz: Kreuz aus Zeile und Spalte am Zielfeld.
+   * Stern + Blitz: alle Emojis der Blitz-Sorte werden zu Blitzen und lösen aus.
+   */
+  async combo(a, b, ta, tb) {
+    const pre = new Set([ta, tb]);
+    const triggered = new Set([ta, tb]);
+    if (ta.special !== "star" && tb.special !== "star") {
+      for (let c = 0; c < COLS; c++) if (this.grid[c][b.r]) pre.add(this.grid[c][b.r]);
+      for (let r = 0; r < ROWS; r++) if (this.grid[b.c][r]) pre.add(this.grid[b.c][r]);
+      this.lineFx("h", b.r);
+      this.lineFx("v", b.c);
+      this.hooks.message("⚡ Blitz-Kreuz!");
+      await this.resolve([a, b], pre, triggered);
+      return;
+    }
+    const star = ta.special === "star" ? ta : tb;
+    const line = star === ta ? tb : ta;
+    triggered.delete(line); // der Blitz selbst löst normal aus
+    for (const col of this.grid) for (const t of col) {
+      if (!t || t.special || t.kind !== line.kind) continue;
+      t.special = Math.random() < 0.5 ? "h" : "v";
+      t.scale = 1.35;
+      this.tween(t, "scale", 1, 0.25, { ease: easeOutBack });
+      pre.add(t);
+    }
+    this.shimmers.push({ t: 0, dur: 0.4 });
+    play("special");
+    this.hooks.message("🌟⚡ Blitz-Regen!");
+    this.hooks.onBonus(10); // fester Bonus statt +5 je Blitz
+    await this.wait(0.45);
+    if (!this.hooks.alive()) return;
+    play("line");
+    play("star");
+    this.quietLines = true;
+    await this.resolve([a, b], pre, triggered);
+    this.quietLines = false;
+  }
+
   starFx() {
     this.hooks.onBonus(5);
     this.shimmers.push({ t: 0, dur: 0.4 });
@@ -279,8 +348,9 @@ export class Board {
   }
 
   lineFx(dir, idx) {
-    this.hooks.onBonus(5);
     this.beams.push({ dir, idx, t: 0, dur: 0.35 });
+    if (this.quietLines) return;
+    this.hooks.onBonus(5);
     play("line");
   }
 
@@ -358,6 +428,7 @@ export class Board {
           }
         }
       }
+      this.quietLines = false;
 
       // Punkte
       const points = clear.size * 10 * level;
@@ -610,7 +681,13 @@ export class Board {
     ctx.save();
     ctx.globalAlpha = t.alpha;
     ctx.translate(t.x + CELL / 2, t.y + CELL / 2);
-    if (t.rot) ctx.rotate(t.rot);
+    let rot = t.rot;
+    const hinted = this.hint && this.hint.tiles.includes(t);
+    if (hinted) {
+      const ph = (this.time - this.hint.start) % 1.6; // alle 1,6 s kurz wackeln
+      if (ph < 0.6) rot += 0.16 * Math.sin(ph * Math.PI * 2 * 4) * (1 - ph / 0.6);
+    }
+    if (rot) ctx.rotate(rot);
     if (t.scale !== 1) ctx.scale(t.scale, t.scale);
     const h = CELL / 2 - 3, w = h * 2;
     roundRect(ctx, -h, -h, w, w, 14);
@@ -651,6 +728,13 @@ export class Board {
     } else if (t.special === "star") {
       roundRect(ctx, -h, -h, w, w, 14);
       ctx.strokeStyle = `rgba(255,217,77,${a})`;
+      ctx.lineWidth = 3;
+      ctx.stroke();
+    }
+
+    if (hinted && !selected) {
+      roundRect(ctx, -h, -h, w, w, 14);
+      ctx.strokeStyle = `rgba(255,255,255,${0.35 + 0.3 * Math.sin(this.time * 6)})`;
       ctx.lineWidth = 3;
       ctx.stroke();
     }

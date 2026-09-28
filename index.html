@@ -5,6 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#1a1333">
   <title>MatchMoji</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="MatchMoji">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -64,6 +71,11 @@
           <div class="vol-row"><button id="btnSound" class="iconbtn" aria-label="Soundeffekte an/aus">🔊</button><div id="volSfx" class="slider"><div class="track"><div class="fill"></div></div><div class="knob"></div></div><span class="pct"></span></div>
         </div>
 
+        <div class="toggles">
+          <button id="tglHints" class="toggle" aria-pressed="true"><span>💡 Hinweise</span><span class="sw"></span></button>
+          <button id="tglVibrate" class="toggle" aria-pressed="true"><span>📳 Vibration</span><span class="sw"></span></button>
+        </div>
+
         <div class="themes track-box">
           <button id="trackPrev" class="btn round small">◀</button>
           <div class="theme-mid">
@@ -73,11 +85,24 @@
           <button id="trackNext" class="btn round small">▶</button>
         </div>
 
+        <button id="btnInstall" class="btn secondary install" hidden>📲 Als App installieren</button>
+        <div id="installHint" class="install-hint" hidden>Als App: im Browser <b>Teilen</b> → <b>„Zum Home-Bildschirm“</b></div>
+
         <button id="btnBack" class="btn back">Zurück</button>
       </div>
     </div>
 
-    <button id="btnQuit" class="flat" style="left:12px;top:22px">✕</button>
+    <button id="btnQuit" class="flat" style="left:12px;top:22px" aria-label="Zum Menü">✕</button>
+    <button id="btnPause" class="flat" style="left:70px;top:22px" aria-label="Pause">⏸️</button>
+
+    <div id="pause" class="screen">
+      <div class="col">
+        <div class="emoji" style="font-size:96px">⏸️</div>
+        <div class="over-title">Pause</div>
+        <button id="btnResume" class="btn">▶ Weiter</button>
+        <button id="btnPauseMenu" class="btn secondary">Menü</button>
+      </div>
+    </div>
 
     <div id="over" class="screen">
       <div class="col">

@@ -10,6 +10,11 @@ Ein Match-3-Browserspiel mit Emojis: Tausche benachbarte Emojis und bilde Reihen
 - 3 oder mehr gleiche in einer Reihe verschwinden. Neue fallen nach, Kettenreaktionen erhöhen den Multiplikator.
 - **4er-Reihe → ⚡ Linien-Blitz:** räumt eine ganze Zeile bzw. Spalte ab.
 - **5er-Reihe → 🌟 Super-Stern:** mit einem Nachbarn tauschen, und alle Emojis dieser Sorte verschwinden.
+- **Kombis:** zwei Spezial-Emojis miteinander tauschen:
+  - ⚡ + ⚡ **Blitz-Kreuz:** räumt Zeile und Spalte ab.
+  - 🌟 + ⚡ **Blitz-Regen:** alle Emojis der Blitz-Sorte werden zu Blitzen und lösen aus.
+  - 🌟 + 🌟 räumt das ganze Brett ab.
+- Wer 5 Sekunden nicht weiterweiß, bekommt einen **Hinweis**: zwei Emojis wackeln.
 
 ## Modi
 
@@ -20,9 +25,18 @@ Ein Match-3-Browserspiel mit Emojis: Tausche benachbarte Emojis und bilde Reihen
 
 Neun Themen (Tiere, Früchte, Fahrzeuge, Essen, Gesichter, Sport, Natur, Grusel und Gemischt). Rekorde und Einstellungen werden im Browser gespeichert.
 
-Thema, Musik und Soundeffekte stellst du unter **⚙️ Einstellungen** ein. Zur Wahl stehen acht Musikstücke: Techno, Chiptune, Lo-Fi, Synthwave, Disco, Korobeiniki (gemeinfreies russisches Volkslied, bekannt aus Tetris), Blocksprung (eigene Komposition im Stil flotter Game-Boy-Musik) und Menuett (Bach, Französische Suite Nr. 3, BWV 814). Korobeiniki und Menuett sind eigene Chiptune-Arrangements gemeinfreier Werke.
+Thema, Musik, Soundeffekte, Hinweise und Vibration (am Handy) stellst du unter **⚙️ Einstellungen** ein. Zur Wahl stehen acht Musikstücke: Techno, Chiptune, Lo-Fi, Synthwave, Disco, Korobeiniki (gemeinfreies russisches Volkslied, bekannt aus Tetris), Blocksprung (eigene Komposition im Stil flotter Game-Boy-Musik) und Menuett (Bach, Französische Suite Nr. 3, BWV 814). Korobeiniki und Menuett sind eigene Chiptune-Arrangements gemeinfreier Werke.
 
-**Tasten:** `M` schaltet die Musik, `S` die Soundeffekte, `Esc` führt aus den Einstellungen zurück.
+**Pause:** mit ⏸️ oben links, mit `P`/`Esc`, oder automatisch beim Wechsel in einen anderen Tab.
+
+**Tasten:** `M` schaltet die Musik, `S` die Soundeffekte, `P`/`Esc` pausiert, `Esc` führt aus den Einstellungen zurück.
+
+## Als App installieren
+
+MatchMoji lässt sich wie eine App installieren und läuft dann auch offline:
+
+- **Android / Chrome / Edge:** ⚙️ Einstellungen → **📲 Als App installieren** (oder über das Browser-Menü).
+- **iPhone / iPad:** in Safari **Teilen** → **„Zum Home-Bildschirm“**.
 
 ## Technik
 

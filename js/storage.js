@@ -10,6 +10,8 @@ const defaults = () => ({
   musicVolume: 1,
   sfxVolume: 1,
   track: 0, // Hintergrundmusik (Index in TRACKS)
+  hints: true, // Hinweis nach Leerlauf
+  vibrate: true, // Vibration am Handy
   // clear: wenigste Reste (Abräumen), normal: schnellste Zeit in Sekunden
   best: { time_attack: 0, endless: 0, clear: null, normal: null },
 });

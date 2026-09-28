@@ -116,7 +116,40 @@ onAudioUnlock((c) => {
   }
 });
 
+/** Audio anhalten/fortsetzen, z. B. wenn der Tab im Hintergrund ist. */
+export function setAudioSuspended(suspended) {
+  try {
+    if (!ctx) return;
+    if (suspended && ctx.state === "running") ctx.suspend();
+    else if (!suspended && ctx.state === "suspended") ctx.resume();
+  } catch (e) { /* ignorieren */ }
+}
+
+// ---------- Vibration (Handy) ----------
+// Nur für spürbare Ereignisse; Klick, Auswahl und Tausch bleiben still.
+const VIB = {
+  special: 35,
+  line: 30,
+  star: [30, 40, 60],
+  invalid: [15, 40, 15],
+  shuffle: 25,
+  time_up: 200,
+  record: [40, 60, 40, 60, 120],
+};
+
+export const canVibrate = typeof navigator !== "undefined" && typeof navigator.vibrate === "function";
+
+function vibrate(name, pitch) {
+  if (!canVibrate || !store.vibrate) return;
+  // ohne vorherige Nutzeraktion blockiert der Browser (mit Konsolen-Warnung)
+  if (navigator.userActivation && !navigator.userActivation.hasBeenActive) return;
+  const pattern = name === "match" ? (pitch > 1 ? 15 : 0) : VIB[name];
+  if (!pattern) return;
+  try { navigator.vibrate(pattern); } catch (e) { /* ignorieren */ }
+}
+
 export function play(name, pitch = 1, gainDb = 0) {
+  vibrate(name, pitch);
   try {
     if (!ctx || !store.sound || store.sfxVolume <= 0) return;
     const buf = buffers[name];

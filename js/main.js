@@ -1,10 +1,10 @@
 import { Board, COLS, ROWS, CELL, BX, BY, BW, BH, UI_FONT, EMOJI_FONT, roundRect, setSpriteScale } from "./board.js";
-import { play, unlockAudio } from "./sfx.js";
+import { play, unlockAudio, setAudioSuspended, canVibrate } from "./sfx.js";
 import { updateMusic, setMusicRate, setTrack, trackIndex, TRACKS } from "./music.js";
 import { store, save, testMode } from "./storage.js";
 import { THEMES, pickKinds } from "./themes.js";
 
-export const VERSION = "1.1.0"; // bei jeder Änderung erhöhen
+export const VERSION = "1.2.0"; // bei jeder Änderung erhöhen
 
 const W = 540, H = 960;
 const TA_TIME = 90;
@@ -16,6 +16,7 @@ const MODES = ["time_attack", "endless", "clear", "normal"];
 const CLEAR_KINDS = 4; // Abräumen: weniger Sorten, sonst ist das Brett kaum leer zu bekommen
 const STAR_LIMITS = [12, 5, 0]; // Reste für ★ / ★★ / ★★★
 const NORMAL_GOAL = 50; // Normal: so viele Matches, Score ist die Zeit
+const HINT_DELAY = 5; // Sekunden ohne Eingabe bis zum Hinweis
 const HUD_FONT = (size) => `700 ${size}px ${UI_FONT.replace("sans-serif", "")}${EMOJI_FONT}`;
 
 const $ = (id) => document.getElementById(id);
@@ -56,7 +57,9 @@ function showScreen(name) {
   $("menu").classList.toggle("show", name === "menu");
   $("settings").classList.toggle("show", name === "settings");
   $("over").classList.toggle("show", name === "over");
+  $("pause").classList.toggle("show", name === "pause");
   $("btnQuit").classList.toggle("show", name === "game");
+  $("btnPause").classList.toggle("show", name === "game");
   if (name === "menu" || name === "settings") refreshMenu();
 }
 
@@ -71,6 +74,14 @@ function refreshMenu() {
   $("bestClear").textContent = `Brett leer räumen · Rekord ${fmtLeft(store.best.clear)}`;
   $("bestNormal").textContent = `${NORMAL_GOAL} Matches · Rekord ${fmtBest(store.best.normal)}`;
   refreshAudioButtons();
+  refreshToggles();
+}
+
+function refreshToggles() {
+  $("tglHints").setAttribute("aria-pressed", String(!!store.hints));
+  $("tglVibrate").setAttribute("aria-pressed", String(!!store.vibrate));
+  // Vibration nur auf Touch-Geräten anbieten, die sie auch können
+  $("tglVibrate").hidden = !(canVibrate && matchMedia("(pointer: coarse)").matches);
 }
 
 function refreshAudioButtons() {
@@ -179,11 +190,27 @@ $("btnSettings").addEventListener("click", () => showScreen("settings"));
 $("btnBack").addEventListener("click", () => showScreen("menu"));
 $("btnAgain").addEventListener("click", () => startGame(game ? game.mode : 0));
 $("btnMenu").addEventListener("click", toMenu);
+$("btnPause").addEventListener("click", pauseGame);
+$("btnResume").addEventListener("click", resumeGame);
+$("btnPauseMenu").addEventListener("click", toMenu);
+$("tglHints").addEventListener("click", () => {
+  store.hints = !store.hints;
+  save();
+  refreshToggles();
+});
+$("tglVibrate").addEventListener("click", () => {
+  store.vibrate = !store.vibrate;
+  save();
+  refreshToggles();
+  if (store.vibrate) play("special"); // zum Ausprobieren
+});
 
 window.addEventListener("keydown", (e) => {
   if (e.repeat) return;
   const k = e.key.toLowerCase();
   if (k === "escape" && screen === "settings") showScreen("menu");
+  else if ((k === "escape" || k === "p") && screen === "game") pauseGame();
+  else if ((k === "escape" || k === "p") && screen === "pause") resumeGame();
   else if (k === "m") toggleMusic();
   else if (k === "s") toggleSound();
 });
@@ -206,6 +233,27 @@ function starsFor(left) {
   return STAR_LIMITS.filter((lim) => left <= lim).length;
 }
 
+// ---------- Pause ----------
+function pauseGame() {
+  if (screen !== "game" || !board) return;
+  drag = null;
+  setMusicRate(1);
+  showScreen("pause");
+}
+
+function resumeGame() {
+  if (screen !== "pause") return;
+  last = performance.now();
+  showScreen("game");
+}
+
+// Tab im Hintergrund: Spiel pausieren und Ton anhalten
+document.addEventListener("visibilitychange", () => {
+  const hidden = document.visibilityState === "hidden";
+  if (hidden) pauseGame();
+  setAudioSuspended(hidden);
+});
+
 // ---------- Runde ----------
 function toMenu() {
   roundId++;
@@ -221,7 +269,7 @@ async function startGame(mode) {
     mode, key, score: 0, best0: mode >= 2 ? store.best[key] : store.best[key] || 0,
     elapsed: 0, matches: 0, goal: NORMAL_GOAL,
     remaining: TA_TIME, running: false, ended: false,
-    message: "", recordSounded: false, bonus: null,
+    message: "", recordSounded: false, bonus: null, idle: 0,
   };
   const g = game;
   const alive = () => id === roundId;
@@ -410,6 +458,10 @@ function cellAt(p) {
 }
 
 cv.addEventListener("pointerdown", (e) => {
+  if (screen === "game" && board && game) {
+    game.idle = 0;
+    board.hint = null;
+  }
   if (screen !== "game" || !board || board.locked) return;
   const p = toLogical(e);
   const cell = cellAt(p);
@@ -461,6 +513,7 @@ function updateGame(dt) {
   if (!board) return;
   board.update(dt);
   if (g.bonus && (g.bonus.t += dt) >= BONUS_POPUP) g.bonus = null;
+  updateHint(g, dt);
   if (!g.running) return;
   if (g.mode === 3) { g.elapsed += dt; return; } // Normal: Uhr zählt hoch
   if (g.mode !== 0) return; // Endlos, Abräumen: keine Uhr
@@ -469,6 +522,23 @@ function updateGame(dt) {
   for (let k = 10; k >= 1; k--) if (prev > k && g.remaining <= k) play("tick");
   setMusicRate(g.remaining <= 10 ? 1.08 : 1);
   if (g.remaining <= 0) timeUp();
+}
+
+/** Nach HINT_DELAY Sekunden ruhigen Bretts ohne Eingabe einen Zug zeigen. */
+function updateHint(g, dt) {
+  const b = board;
+  const quiet = store.hints && screen === "game" && g.running && !g.ended &&
+    !b.locked && !b.busy && !b.selected && b.isCalm();
+  if (!quiet) {
+    g.idle = 0;
+    return;
+  }
+  if (b.hint) return;
+  g.idle += dt;
+  if (g.idle >= HINT_DELAY) {
+    const moves = b.findMoves();
+    if (moves.length) b.showHint(moves[Math.floor(Math.random() * moves.length)]);
+  }
 }
 
 // ---------- Zeichnen ----------
@@ -551,7 +621,7 @@ function render() {
   const k = cv.width / W;
   ctx.setTransform(k, 0, 0, k, 0, 0);
   drawBackground();
-  if (board && game && (screen === "game" || screen === "over")) drawGame();
+  if (board && game && (screen === "game" || screen === "over" || screen === "pause")) drawGame();
 }
 
 let last = performance.now();
@@ -562,6 +632,33 @@ function frame(now) {
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
+
+// ---------- Als App (PWA) ----------
+if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+  // Version im Namen: jede neue Version installiert einen neuen Service Worker
+  navigator.serviceWorker.register(`sw.js?v=${VERSION}`).catch(() => { /* ohne Offline-Modus weiter */ });
+}
+
+let installPrompt = null;
+const standalone = matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  installPrompt = e;
+  $("btnInstall").hidden = false;
+});
+window.addEventListener("appinstalled", () => {
+  installPrompt = null;
+  $("btnInstall").hidden = true;
+});
+$("btnInstall").addEventListener("click", async () => {
+  if (!installPrompt) return;
+  installPrompt.prompt();
+  try { await installPrompt.userChoice; } catch (e) { /* egal */ }
+  installPrompt = null;
+  $("btnInstall").hidden = true;
+});
+// iPhone/iPad kennen kein Installations-Ereignis: Hinweis auf das Teilen-Menü
+$("installHint").hidden = standalone || !/iphone|ipad|ipod/i.test(navigator.userAgent);
 
 // ---------- Start ----------
 $("version").textContent = `v${VERSION}`;
