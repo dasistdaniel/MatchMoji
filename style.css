@@ -169,5 +169,7 @@ h1 {
 #over { background: rgba(13,8,31,0.82); }
 #over .col { gap: 16px; }
 .over-title { font-size: 60px; color: var(--accent); }
+.over-stars { font-size: 52px; letter-spacing: 8px; }
+.over-stars .dim { opacity: 0.2; filter: grayscale(1); }
 .over-score { font-size: 44px; }
 .over-best { font-size: 24px; color: rgba(255,255,255,0.75); margin-bottom: 10px; }

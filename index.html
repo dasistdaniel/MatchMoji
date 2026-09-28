@@ -30,6 +30,10 @@
         </div>
 
         <div class="mode">
+          <button id="btnNormal" class="btn">🧩 Normal</button>
+          <div id="bestNormal" class="best"></div>
+        </div>
+        <div class="mode">
           <button id="btnTA" class="btn">⏱ Time Attack</button>
           <div id="bestTA" class="best"></div>
         </div>
@@ -49,8 +53,9 @@
 
     <div id="over" class="screen">
       <div class="col">
-        <div class="emoji" style="font-size:96px">⏰</div>
-        <div class="over-title">Zeit um!</div>
+        <div id="overEmoji" class="emoji" style="font-size:96px">⏰</div>
+        <div id="overTitle" class="over-title">Zeit um!</div>
+        <div id="overStars" class="over-stars emoji"></div>
         <div id="overScore" class="over-score"></div>
         <div id="overBest" class="over-best"></div>
         <button id="btnAgain" class="btn">Nochmal</button>

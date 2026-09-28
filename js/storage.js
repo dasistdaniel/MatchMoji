@@ -9,7 +9,7 @@ const defaults = () => ({
   sound: true,
   musicVolume: 1,
   sfxVolume: 1,
-  best: { time_attack: 0, endless: 0 },
+  best: { time_attack: 0, endless: 0, normal: null }, // normal: wenigste Reste
 });
 
 function load() {

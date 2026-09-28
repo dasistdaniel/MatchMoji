@@ -13,6 +13,7 @@ Ein Match-3-Browserspiel mit Emojis: Tausche benachbarte Emojis und bilde Reihen
 
 ## Modi
 
+- **🧩 Normal:** Es kommen keine neuen Emojis nach, Ziel ist es, das Brett komplett abzuräumen. Gibt es keinen Zug mehr, ist die Runde vorbei. Bewertet wird nach den Resten: ⭐⭐⭐ alles abgeräumt, ⭐⭐ höchstens 5 übrig, ⭐ höchstens 12 übrig, sonst verloren. Gespielt wird mit 4 Sorten, der Rekord zählt die wenigsten Reste.
 - **⏱ Time Attack:** 90 Sekunden, so viele Punkte wie möglich. Jede gelöste Reihe gibt **+1 Sekunde**, jedes ausgelöste Power-up (⚡ oder 🌟) **+5 Sekunden**.
 - **♾ Endlos:** ohne Zeitlimit.
 

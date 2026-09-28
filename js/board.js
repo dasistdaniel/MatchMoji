@@ -63,10 +63,12 @@ export class Board {
   /**
    * @param kinds  Array mit 6 Emojis
    * @param hooks  { alive(), onScore(points, level), onBonus(sec), message(text), isOver() }
+   * @param opts   { refill }: ohne Nachschub bleiben geleerte Felder leer (Normal-Modus)
    */
-  constructor(kinds, hooks) {
+  constructor(kinds, hooks, opts = {}) {
     this.kinds = kinds;
     this.hooks = hooks;
+    this.refill = opts.refill !== false;
     this.grid = [];
     for (let c = 0; c < COLS; c++) this.grid.push(new Array(ROWS).fill(null));
     this.dying = [];
@@ -94,10 +96,20 @@ export class Board {
     this.tweens.push({ obj, prop, to, dur, delay: opts.delay || 0, ease: opts.ease || linear, from: null, t: 0, done: opts.done });
   }
 
+  /** Anzahl der Emojis auf dem Brett. */
+  count() {
+    let n = 0;
+    for (const col of this.grid) for (const t of col) if (t) n++;
+    return n;
+  }
+
   isCalm() {
     for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) {
       const t = this.grid[c][r];
-      if (!t) return false;
+      if (!t) {
+        if (this.refill) return false;
+        continue;
+      }
       if (t.delay > 0 || t.swapping || t.vy !== 0 || t.y !== r * CELL || t.x !== c * CELL) return false;
     }
     return true;
@@ -211,6 +223,7 @@ export class Board {
   /** Führt einen Tausch aus. Gibt true zurück, wenn er gültig war. */
   async trySwap(a, b) {
     if (this.locked || this.busy) return false;
+    if (!this.grid[a.c][a.r] || !this.grid[b.c][b.r]) return false;
     this.busy = true;
     this.locked = true;
     this.selected = null;
@@ -228,12 +241,12 @@ export class Board {
       const pre = new Set();
       const triggered = new Set();
       if (starA && starB) {
-        for (const col of this.grid) for (const t of col) pre.add(t);
+        for (const col of this.grid) for (const t of col) if (t) pre.add(t);
       } else {
         const star = starA ? ta : tb;
         const other = starA ? tb : ta;
         pre.add(star);
-        for (const col of this.grid) for (const t of col) if (t.special !== "star" && t.kind === other.kind) pre.add(t);
+        for (const col of this.grid) for (const t of col) if (t && t.special !== "star" && t.kind === other.kind) pre.add(t);
       }
       if (starA) triggered.add(ta);
       if (starB) triggered.add(tb);
@@ -280,7 +293,7 @@ export class Board {
       if (runs.length === 0 && !(first && preClear)) break;
 
       const pos = new Map(); // Tile -> {c,r}
-      for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) pos.set(this.grid[c][r], { c, r });
+      for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) if (this.grid[c][r]) pos.set(this.grid[c][r], { c, r });
 
       const clear = new Set(first && preClear ? preClear : []);
       for (const run of runs) for (const p of run.cells) clear.add(this.grid[p.c][p.r]);
@@ -324,18 +337,18 @@ export class Board {
         const added = [];
         if (t.special === "h") {
           this.lineFx("h", p.r);
-          for (let c = 0; c < COLS; c++) added.push(this.grid[c][p.r]);
+          for (let c = 0; c < COLS; c++) if (this.grid[c][p.r]) added.push(this.grid[c][p.r]);
         } else if (t.special === "v") {
           this.lineFx("v", p.c);
-          for (let r = 0; r < ROWS; r++) added.push(this.grid[p.c][r]);
+          for (let r = 0; r < ROWS; r++) if (this.grid[p.c][r]) added.push(this.grid[p.c][r]);
         } else if (t.special === "star") {
           const present = new Set();
-          for (const col of this.grid) for (const x of col) if (x.special !== "star") present.add(x.kind);
+          for (const col of this.grid) for (const x of col) if (x && x.special !== "star") present.add(x.kind);
           const list = [...present];
           this.starFx();
           if (list.length) {
             const kind = list[Math.floor(Math.random() * list.length)];
-            for (const col of this.grid) for (const x of col) if (x.special !== "star" && x.kind === kind) added.push(x);
+            for (const col of this.grid) for (const x of col) if (x && x.special !== "star" && x.kind === kind) added.push(x);
           }
         }
         for (const x of added) {
@@ -390,7 +403,7 @@ export class Board {
       first = false;
     }
 
-    if (!this.hooks.isOver() && !this.hasValidMove()) {
+    if (this.refill && !this.hooks.isOver() && !this.hasValidMove()) {
       this.hooks.message("Keine Züge mehr – neu gemischt!");
       play("shuffle");
       for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) {
@@ -421,7 +434,7 @@ export class Board {
           this.grid[c][write--] = t;
         }
       }
-      const n = write + 1;
+      const n = this.refill ? write + 1 : 0;
       for (let i = 0; i < n; i++) {
         const t = makeTile(this.randKind());
         t.x = c * CELL;
@@ -615,6 +628,7 @@ function lineLen(g, c, r) {
 }
 
 function swapMakesMatch(g, c1, r1, c2, r2) {
+  if (g[c1][r1] === -2 || g[c2][r2] === -2) return false; // leeres Feld
   if (g[c1][r1] === -1 || g[c2][r2] === -1) return true;
   [g[c1][r1], g[c2][r2]] = [g[c2][r2], g[c1][r1]];
   const ok = lineLen(g, c1, r1) >= 3 || lineLen(g, c2, r2) >= 3;
