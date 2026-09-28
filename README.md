@@ -20,7 +20,7 @@ Ein Match-3-Browserspiel mit Emojis: Tausche benachbarte Emojis und bilde Reihen
 
 Neun Themen (Tiere, Früchte, Fahrzeuge, Essen, Gesichter, Sport, Natur, Grusel und Gemischt). Rekorde und Einstellungen werden im Browser gespeichert.
 
-Thema, Musik und Soundeffekte stellst du unter **⚙️ Einstellungen** ein.
+Thema, Musik und Soundeffekte stellst du unter **⚙️ Einstellungen** ein. Zur Wahl stehen fünf Musikstücke: Techno, Chiptune, Lo-Fi, Synthwave und Disco.
 
 **Tasten:** `M` schaltet die Musik, `S` die Soundeffekte, `Esc` führt aus den Einstellungen zurück.
 

@@ -1,6 +1,6 @@
 import { Board, COLS, ROWS, CELL, BX, BY, BW, BH, UI_FONT, EMOJI_FONT, roundRect, setSpriteScale } from "./board.js";
 import { play, unlockAudio } from "./sfx.js";
-import { updateMusic, setMusicRate } from "./music.js";
+import { updateMusic, setMusicRate, setTrack, trackIndex, TRACKS } from "./music.js";
 import { store, save, testMode } from "./storage.js";
 import { THEMES, pickKinds } from "./themes.js";
 
@@ -62,6 +62,7 @@ function showScreen(name) {
 function refreshMenu() {
   $("themeName").textContent = THEMES[store.theme].name;
   $("menuTheme").textContent = `Thema: ${THEMES[store.theme].name}`;
+  $("trackName").textContent = TRACKS[trackIndex()].name;
   $("themePreview").textContent = pickKinds(store.theme).join(" ");
   $("bestTA").textContent = `90 Sekunden · Rekord ${store.best.time_attack}`;
   $("bestEndless").textContent = `Ohne Zeitlimit · Rekord ${store.best.endless}`;
@@ -80,6 +81,21 @@ function refreshAudioButtons() {
 function changeTheme(d) {
   store.theme = (store.theme + d + THEMES.length) % THEMES.length;
   save();
+  refreshMenu();
+}
+
+function changeTrack(d) {
+  store.track = (trackIndex() + d + TRACKS.length) % TRACKS.length;
+  save();
+  setTrack(store.track);
+  // Beim Durchhören soll die Musik auch zu hören sein
+  if (!store.music || store.musicVolume <= 0) {
+    store.music = true;
+    if (store.musicVolume <= 0) store.musicVolume = 0.5;
+    save();
+    updateMusic();
+    refreshAudioButtons();
+  }
   refreshMenu();
 }
 
@@ -148,6 +164,8 @@ for (const b of document.querySelectorAll("button")) b.addEventListener("click",
 
 $("themePrev").addEventListener("click", () => changeTheme(-1));
 $("themeNext").addEventListener("click", () => changeTheme(1));
+$("trackPrev").addEventListener("click", () => changeTrack(-1));
+$("trackNext").addEventListener("click", () => changeTrack(1));
 $("btnMusic").addEventListener("click", toggleMusic);
 $("btnSound").addEventListener("click", toggleSound);
 $("btnTA").addEventListener("click", () => startGame(0));

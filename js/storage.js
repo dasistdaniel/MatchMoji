@@ -9,6 +9,7 @@ const defaults = () => ({
   sound: true,
   musicVolume: 1,
   sfxVolume: 1,
+  track: 0, // Hintergrundmusik (Index in TRACKS)
   // clear: wenigste Reste (Abräumen), normal: schnellste Zeit in Sekunden
   best: { time_attack: 0, endless: 0, clear: null, normal: null },
 });
