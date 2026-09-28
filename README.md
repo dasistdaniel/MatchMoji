@@ -13,7 +13,7 @@ Ein Match-3-Browserspiel mit Emojis: Tausche benachbarte Emojis und bilde Reihen
 
 ## Modi
 
-- **⏱ Time Attack:** 90 Sekunden, so viele Punkte wie möglich.
+- **⏱ Time Attack:** 90 Sekunden, so viele Punkte wie möglich. Jede gelöste Reihe gibt **+1 Sekunde**, jedes ausgelöste Power-up (⚡ oder 🌟) **+5 Sekunden**.
 - **♾ Endlos:** ohne Zeitlimit.
 
 Neun Themen (Tiere, Früchte, Fahrzeuge, Essen, Gesichter, Sport, Natur, Grusel und Gemischt). Rekorde und Einstellungen werden im Browser gespeichert.

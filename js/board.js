@@ -62,7 +62,7 @@ function makeTile(kind) {
 export class Board {
   /**
    * @param kinds  Array mit 6 Emojis
-   * @param hooks  { alive(), onScore(points, level), message(text), isOver() }
+   * @param hooks  { alive(), onScore(points, level), onBonus(sec), message(text), isOver() }
    */
   constructor(kinds, hooks) {
     this.kinds = kinds;
@@ -259,12 +259,14 @@ export class Board {
   }
 
   starFx() {
+    this.hooks.onBonus(5);
     this.shimmers.push({ t: 0, dur: 0.4 });
     play("star");
     this.hooks.message("🌟 Super-Stern!");
   }
 
   lineFx(dir, idx) {
+    this.hooks.onBonus(5);
     this.beams.push({ dir, idx, t: 0, dur: 0.35 });
     play("line");
   }
@@ -355,6 +357,7 @@ export class Board {
       });
       this.hooks.onScore(points, level);
       play("match", Math.min(1 + 0.12 * (level - 1), 1.8));
+      if (runs.length) this.hooks.onBonus(runs.length);
 
       // Spezial-Emojis setzen
       if (creations.size) {

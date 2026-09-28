@@ -6,6 +6,7 @@ import { THEMES, pickKinds } from "./themes.js";
 
 const W = 540, H = 960;
 const TA_TIME = 90;
+const BONUS_POPUP = 1.0; // Anzeigedauer „+N s“
 const ACCENT = "#ffc94a";
 const DANGER = "#ff6b6b";
 const MODES = ["time_attack", "endless"];
@@ -174,7 +175,7 @@ async function startGame(mode) {
   game = {
     mode, key, score: 0, best0: store.best[key] || 0,
     remaining: TA_TIME, elapsed: 0, running: false, timeUp: false,
-    message: "", recordSounded: false,
+    message: "", recordSounded: false, bonus: null,
   };
   const g = game;
   const alive = () => id === roundId;
@@ -182,6 +183,13 @@ async function startGame(mode) {
     alive,
     isOver: () => g.timeUp,
     message: (m) => { if (!g.timeUp || m === "Zeit um!") g.message = m; },
+    onBonus: (sec) => {
+      // Time Attack: +1 s pro Reihe, +5 s pro ausgelöstem Power-up
+      if (g.mode !== 0 || !g.running || g.timeUp) return;
+      g.remaining += sec;
+      if (g.bonus && g.bonus.t < 0.3) g.bonus.sec += sec;
+      else g.bonus = { sec, t: 0 };
+    },
     onScore: (points) => {
       g.score += points;
       if (g.mode === 1 && g.best0 > 0 && g.score > g.best0 && !g.recordSounded) {
@@ -327,6 +335,7 @@ function updateGame(dt) {
   const g = game;
   if (!board) return;
   board.update(dt);
+  if (g.bonus && (g.bonus.t += dt) >= BONUS_POPUP) g.bonus = null;
   if (!g.running) return;
   if (g.mode === 0) {
     const prev = g.remaining;
@@ -374,6 +383,14 @@ function drawGame() {
   text(`${g.score} Punkte`, W / 2, 84, 26, "#fff");
   const rec = g.best0 > 0 && g.score > g.best0 ? "🏆 Neuer Rekord!" : `🏆 Rekord ${g.best0}`;
   text(rec, 525, 40, 16, "rgba(255,255,255,0.6)", "right");
+
+  if (ta && g.bonus) {
+    const k = g.bonus.t / BONUS_POPUP;
+    ctx.save();
+    ctx.globalAlpha = k < 0.5 ? 1 : 1 - (k - 0.5) / 0.5;
+    text(`+${g.bonus.sec} s`, 440, 80 - 16 * k, 24, "#7dffa0");
+    ctx.restore();
+  }
 
   if (ta) {
     roundRect(ctx, 40, 132, 460, 14, 7);
