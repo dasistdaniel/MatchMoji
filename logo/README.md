@@ -33,6 +33,7 @@ Die App-Kachel hat einen senkrechten Verlauf von Violett nach Nachtviolett.
 | `matchmoji-icon.svg` | App-Icon mit runden Ecken |
 | `matchmoji-icon-fullbleed.svg` / `-maskable.svg` | App-Icon randlos (iOS) bzw. mit Sicherheitsabstand (Android) |
 | `matchmoji-icon-small.svg` | Kleingrößen-Schnitt für das Favicon (16–48 px) |
+| `social-preview.png` | Vorschaubild für GitHub und Social Media (1280 × 640 px) |
 | `build_logo.py` | Erzeugt alle Dateien neu: `python logo/build_logo.py` |
 
 ## Regeln
