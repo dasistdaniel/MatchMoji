@@ -9,6 +9,8 @@ const FILES = [
   "index.html",
   "style.css",
   "manifest.json",
+  "favicon.ico",
+  "logo/matchmoji-wordmark-gold.svg",
   "js/main.js",
   "js/board.js",
   "js/sfx.js",

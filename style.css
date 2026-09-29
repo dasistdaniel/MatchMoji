@@ -173,6 +173,7 @@ h1 {
   color: var(--accent);
   line-height: 1;
 }
+.title-logo { display: block; width: 440px; height: auto; margin: 0 auto 6px; }
 h2 { margin: 0 0 16px; font-size: 48px; color: var(--accent); }
 .section-label { font-size: 20px; margin-top: 18px; }
 .section-hint { font-size: 15px; color: rgba(255,255,255,0.5); }

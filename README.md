@@ -1,4 +1,9 @@
-# MatchMoji
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="logo/matchmoji-horizontal-tile-dark.svg">
+    <img src="logo/matchmoji-horizontal-tile-light.svg" alt="MatchMoji" width="480">
+  </picture>
+</p>
 
 Ein Match-3-Browserspiel mit Emojis: Tausche benachbarte Emojis und bilde Reihen aus drei oder mehr gleichen.
 
